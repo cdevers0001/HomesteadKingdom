@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Kingdom Ledger — Homestead Kingdom</title>
+<meta name="description" content="The living record of Homestead Kingdom — the Kingdom's tier, the treasury, and the Council standings. Updated every episode.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#2C4A34; --green-dk:#223b29; --honey:#B5761F; --wood:#6B4A2E;
+    --ink:#33302B; --muted:#6E6656; --cream:#F5ECD8; --parch:#E8DCC0;
+    --oxblood:#7A3B2E; --wax:#8C2F26; --gold:#C9A227; --line:#cbb68c;
+    --slate:#5E6468; --nav-h:64px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Inter',system-ui,Segoe UI,Arial,sans-serif; color:var(--ink);
+    background:#26201a;
+    background-image:
+      radial-gradient(140% 120% at 50% -10%, #3a3021 0%, #26201a 55%, #1c1712 100%);
+    min-height:100vh; padding:0 0 60px;
+  }
+  .wrap{max-width:1040px; margin:0 auto; padding:0 18px}
+
+  /* ---------- Banner ---------- */
+  header.banner{text-align:center; padding:44px 18px 26px}
+  .banner .kicker{font-family:'Inter',sans-serif; font-size:12px; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:var(--honey)}
+  .banner h1{font-family:'IM Fell English',Georgia,serif; font-weight:400; color:var(--cream); font-size:clamp(30px,6vw,52px); line-height:1.05; margin:6px 0 4px; letter-spacing:.5px}
+  .banner .tag{font-family:'IM Fell English',serif; font-style:italic; color:#c9bfa4; font-size:clamp(14px,2.4vw,18px)}
+  .banner .rule{width:80px; height:2px; background:var(--honey); margin:16px auto 0; opacity:.7}
+
+  /* ---------- Parchment card base ---------- */
+  .card{
+    position:relative; background:
+      radial-gradient(120% 140% at 15% 0%, #f6edd6 0%, #efe3c6 45%, #e4d4ad 100%);
+    border:2px solid #b79b62; border-radius:14px;
+    box-shadow:0 14px 34px rgba(0,0,0,.4), inset 0 0 60px rgba(150,120,60,.16);
+    padding:24px 26px; margin-bottom:26px; overflow:hidden;
+  }
+  .card::after{content:""; position:absolute; inset:6px; border:1px solid rgba(120,90,40,.28); border-radius:9px; pointer-events:none}
+  .corner{position:absolute; width:16px; height:16px; border:2px solid var(--honey); opacity:.55; z-index:2}
+  .corner.tl{top:9px;left:9px;border-right:0;border-bottom:0}
+  .corner.tr{top:9px;right:9px;border-left:0;border-bottom:0}
+  .corner.bl{bottom:9px;left:9px;border-right:0;border-top:0}
+  .corner.br{bottom:9px;right:9px;border-left:0;border-top:0}
+  .sect-title{font-family:'IM Fell English',serif; font-size:26px; color:var(--green); margin-bottom:2px}
+  .sect-sub{font-family:'Inter',sans-serif; font-size:10.5px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--honey); margin-bottom:16px}
+
+  /* ---------- Hero: current state ---------- */
+  .hero{display:grid; grid-template-columns:132px 1fr; gap:24px; align-items:center}
+  .crest{
+    width:132px;height:132px;border-radius:50%;
+    background:radial-gradient(circle at 40% 34%, #3a6045, #22402e 72%);
+    border:5px solid var(--gold); display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 20px rgba(0,0,0,.4), inset 0 0 26px rgba(0,0,0,.35);
+    color:#f0e6c6; font-size:52px;
+  }
+  .hero .tlabel{font-family:'Inter',sans-serif; font-size:10px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted)}
+  .hero .tname{font-family:'IM Fell English',serif; font-size:clamp(30px,6vw,44px); color:var(--green); line-height:1.02; margin:2px 0}
+  .hero .tno{font-family:'Inter',sans-serif; font-size:13px; color:var(--wood); font-weight:600; margin-bottom:10px}
+  .bar{height:15px; background:#d8c393; border-radius:9px; overflow:hidden; border:1px solid #b0904f; margin:4px 0 5px}
+  .bar>i{display:block;height:100%;background:linear-gradient(90deg,#3a6045,#4d7c59); border-radius:9px; transition:width .8s ease}
+  .hero .next{font-family:'Inter',sans-serif; font-size:12px; color:var(--muted); display:flex; justify-content:space-between}
+  .hero .next b{color:var(--green)}
+
+  .stats{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:20px; padding-top:18px; border-top:1px dashed #b39c6a}
+  .stat{text-align:center}
+  .stat .n{font-family:'Inter',sans-serif; font-weight:800; font-size:26px; color:var(--honey); line-height:1}
+  .stat .n small{font-family:'IM Fell English',serif; font-weight:400; font-size:14px; color:var(--wood)}
+  .stat .l{font-family:'Inter',sans-serif; font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-top:5px}
+
+  /* ---------- Category plaques ---------- */
+  .plaques{display:grid; grid-template-columns:repeat(5,1fr); gap:12px}
+  .pl{
+    background:linear-gradient(160deg,#2f6b3f,#1f4a2c); border:2px solid var(--gold);
+    border-radius:11px; padding:14px 8px 12px; text-align:center; color:#f4eeda;
+    box-shadow:0 5px 14px rgba(0,0,0,.28), inset 0 1px 6px rgba(255,255,255,.1);
+  }
+  .pl .ic{font-size:26px}
+  .pl .v{font-family:'Inter',sans-serif; font-weight:800; font-size:22px; color:var(--gold); margin-top:3px; line-height:1}
+  .pl .k{font-family:'Inter',sans-serif; font-size:9.5px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:#cfe6d3; margin-top:5px}
+
+  /* ---------- Council leaderboard ---------- */
+  .lbrow{display:flex; align-items:center; gap:13px; padding:10px 4px; border-bottom:1px dashed #c3ac78}
+  .lbrow:last-child{border-bottom:none}
+  .rk{width:30px;height:30px;flex:0 0 30px; border-radius:50%; display:flex;align-items:center;justify-content:center; font-family:'Inter',sans-serif; font-weight:800; font-size:14px; color:#fff; background:var(--wood)}
+  .lbrow.g1 .rk{background:linear-gradient(145deg,#e6c34d,#b8901f); color:#2a1e05}
+  .lbrow.g2 .rk{background:linear-gradient(145deg,#cfcfcf,#9a9a9a); color:#222}
+  .lbrow.g3 .rk{background:linear-gradient(145deg,#d19a5c,#a06a2f)}
+  .who{flex:1; min-width:0}
+  .who .nm{font-family:'Inter',sans-serif; font-weight:700; font-size:15px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .who .rr{font-family:'Inter',sans-serif; font-size:11px; color:var(--muted)}
+  .who .rr .hon{color:var(--oxblood); font-weight:600}
+  .who .gx{font-family:'Inter',sans-serif; font-size:10.5px; color:var(--wood); margin-top:1px}
+  .who .gx .gd{font-weight:700; color:var(--green)}
+  .xp{font-family:'Inter',sans-serif; font-weight:800; font-size:16px; color:var(--green); text-align:right; white-space:nowrap}
+  .xp small{display:block; font-weight:500; font-size:9px; color:var(--muted); letter-spacing:1px}
+
+  /* ---------- Player Profile (click-to-expand) ---------- */
+  .lbwrap{border-bottom:1px dashed #c3ac78}
+  .lbwrap:last-child{border-bottom:none}
+  .lbwrap .lbrow{border-bottom:none; cursor:pointer; padding:10px 6px; border-radius:8px; transition:background .18s}
+  .lbwrap .lbrow:hover{background:rgba(120,90,40,.06)}
+  .lbwrap .lbrow.open{background:rgba(181,118,31,.1)}
+  .lbchev{font-size:11px; color:var(--wood); opacity:.6; transition:transform .2s; margin-left:2px}
+  .lbrow.open .lbchev{transform:rotate(180deg); opacity:1}
+
+  .profile-card{
+    margin:0 4px 14px; padding:18px 20px; border-radius:12px;
+    background:radial-gradient(120% 140% at 15% 0%,#f7efda 0%,#efe3c6 45%,#e4d4ad 100%);
+    border:1.5px solid #b79b62; box-shadow:inset 0 0 40px rgba(150,120,60,.14);
+    animation:pcIn .22s ease;
+  }
+  @keyframes pcIn{from{opacity:0; transform:translateY(-6px)} to{opacity:1; transform:translateY(0)}}
+  .pc-head{display:flex; align-items:center; gap:14px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px dashed #b39c6a}
+  .pc-logo{width:46px; height:46px; object-fit:contain; flex-shrink:0}
+  .pc-name{font-family:'IM Fell English',serif; font-size:20px; color:var(--green)}
+  .pc-rank{font-family:'Inter',sans-serif; font-size:12px; font-weight:700; color:var(--honey); text-transform:uppercase; letter-spacing:.5px; margin-top:2px}
+  .pc-row{display:flex; gap:22px; margin-bottom:10px}
+  .pc-col{flex:1}
+  .pc-lab{font-family:'Inter',sans-serif; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted)}
+  .pc-val{font-family:'Inter',sans-serif; font-size:14px; font-weight:700; color:var(--ink); margin-top:2px}
+  .pc-val.big{font-family:'Inter',sans-serif; font-size:22px; font-weight:800; color:var(--green)}
+  .pc-bar{height:8px; background:rgba(120,90,40,.16); border-radius:20px; overflow:hidden; margin-bottom:5px}
+  .pc-bar i{display:block; height:100%; border-radius:20px; background:linear-gradient(90deg,var(--honey),#d9ab3a)}
+  .pc-sub{font-family:'Inter',sans-serif; font-size:11.5px; color:var(--muted)}
+  .pc-sub-row{display:flex; align-items:center; gap:8px; margin-bottom:14px}
+  .pc-info{position:relative; display:inline-flex; cursor:pointer}
+  .pc-info-ic{width:16px; height:16px; border-radius:50%; background:rgba(94,74,54,.18); color:var(--wood);
+    font-family:'Inter',sans-serif; font-style:italic; font-size:11px; font-weight:800;
+    display:flex; align-items:center; justify-content:center; user-select:none}
+  .pc-tooltip{display:none; position:absolute; bottom:100%; left:0; margin-bottom:8px; z-index:20;
+    background:#2a2018; border:1px solid rgba(197,167,110,.4); border-radius:8px; padding:10px 12px;
+    box-shadow:0 10px 24px rgba(0,0,0,.4); min-width:190px}
+  .pc-info:hover .pc-tooltip, .pc-info.show .pc-tooltip{display:block}
+  .pc-tooltip-title{font-family:'Inter',sans-serif; font-size:10px; font-weight:800; letter-spacing:1px;
+    text-transform:uppercase; color:var(--honey); margin-bottom:6px; white-space:nowrap}
+  .pc-tt-row{display:flex; justify-content:space-between; gap:16px; font-family:'Inter',sans-serif;
+    font-size:11.5px; color:#d9cfb8; padding:2.5px 0; white-space:nowrap}
+  .pc-tt-row.current{color:#fff; font-weight:800; background:rgba(181,118,31,.28);
+    margin:0 -6px; padding:2.5px 6px; border-radius:4px}
+  .pc-tt-xp{color:#9c927c}
+  .pc-tt-row.current .pc-tt-xp{color:#e2c783}
+  .pc-section-lab{font-family:'Inter',sans-serif; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--wood); margin:14px 0 8px; padding-top:12px; border-top:1px dashed #b39c6a}
+  .pc-badges{display:flex; flex-wrap:wrap; gap:6px}
+  .pc-badge{font-family:'Inter',sans-serif; font-size:11.5px; font-weight:700; color:#fff; background:var(--green); padding:5px 12px; border-radius:20px}
+  .pc-badge.dim{background:none; border:1px dashed #b39c6a; color:var(--muted); font-weight:500}
+  .pc-votes{display:flex; flex-direction:column; gap:6px; max-height:220px; overflow-y:auto}
+  .pc-vote-row{display:flex; gap:10px; align-items:baseline; font-family:'Inter',sans-serif; font-size:12.5px; padding:6px 10px; background:rgba(255,255,255,.4); border-radius:7px}
+  .pc-vote-row.dim{color:var(--muted); font-style:italic}
+  .pc-ep{font-weight:800; color:var(--honey); flex-shrink:0; min-width:44px}
+  .pc-proj{color:var(--ink)}
+  .pc-late{color:var(--oxblood); font-style:italic; font-size:11px}
+  @media(max-width:480px){
+    .pc-row{flex-direction:column; gap:8px}
+  }
+
+  /* ---------- Chronicle ---------- */
+  .chron{display:flex; flex-direction:column; gap:0}
+  .ev{display:grid; grid-template-columns:78px 1fr; gap:14px; padding:12px 0; border-bottom:1px dashed #c3ac78}
+  .ev:last-child{border-bottom:none}
+  .ev .ep{font-family:'IM Fell English',serif; font-size:15px; color:var(--honey); font-weight:400}
+  .ev .ep small{display:block; font-family:'Inter',sans-serif; font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-weight:600}
+  .ev .desc{font-family:'Inter',sans-serif; font-size:13.5px; color:var(--ink); line-height:1.5}
+  .ev .desc b{color:var(--green)}
+
+  /* ---------- Council ladder strip ---------- */
+  .ladder{display:flex; flex-wrap:wrap; gap:7px; margin-top:4px}
+  .rung{font-family:'Inter',sans-serif; font-size:11px; padding:5px 10px; border-radius:20px; background:#ece0c2; border:1px solid #cbb68c; color:var(--wood); font-weight:600}
+
+  /* ---------- CTA ---------- */
+  .cta{text-align:center; background:linear-gradient(160deg,#2f5238,#22402e); border-color:#3a5c43}
+  .cta::after{border-color:rgba(255,255,255,.14)}
+  .cta .sect-title{color:var(--cream)}
+  .cta p{font-family:'Inter',sans-serif; color:#dfe6da; font-size:14px; line-height:1.6; max-width:620px; margin:0 auto 16px}
+  .cta a.btn{display:inline-block; background:var(--honey); color:#241a08; font-family:'Inter',sans-serif; font-weight:800; text-decoration:none; padding:12px 26px; border-radius:9px; font-size:14px; letter-spacing:.4px; box-shadow:0 5px 14px rgba(0,0,0,.3)}
+  .cta a.btn:hover{background:#c9861f}
+
+  footer{text-align:center; font-family:'Inter',sans-serif; color:#8f8672; font-size:11.5px; line-height:1.7; padding-top:8px}
+  footer .up{color:#b7ab8e}
+  .datanote{font-family:'Inter',sans-serif; font-size:11px; color:#a89a7d; text-align:center; margin-bottom:18px; display:none}
+
+  @media (max-width:720px){
+    .hero{grid-template-columns:1fr; text-align:center; gap:14px}
+    .crest{margin:0 auto}
+    .hero .next{justify-content:center; gap:10px}
+    .plaques{grid-template-columns:repeat(2,1fr)}
+    .plaques .pl:last-child{grid-column:1 / -1}
+    .stats{grid-template-columns:1fr 1fr}
+  }
+.nav{position:sticky;top:0;z-index:100;height:var(--nav-h);
+  background:rgba(24,20,16,.72);backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(197,167,110,.16);transition:background .3s,border-color .3s,box-shadow .3s}
+.nav.stuck{background:rgba(20,16,13,.95);border-bottom-color:rgba(197,167,110,.34);
+  box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.nav-in{max-width:1220px;margin:0 auto;padding:0 20px;height:100%;display:flex;align-items:center;gap:22px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.brand .crest{width:32px;height:32px;flex-shrink:0}
+.brand b{font-family:'IM Fell English',serif;font-size:19px;color:var(--cream);font-weight:400;
+  letter-spacing:.4px;white-space:nowrap}
+.brand i{display:block;font-style:normal;font-size:8.5px;letter-spacing:2.6px;text-transform:uppercase;
+  color:var(--honey);font-weight:800;margin-top:-2px}
+.nav-links{display:flex;gap:3px;margin-left:auto;align-items:center}
+.nav-links a{text-decoration:none;color:#d9cfb8;font-size:12.5px;font-weight:600;letter-spacing:.4px;
+  padding:8px 11px;border-radius:7px;transition:color .18s,background .18s;white-space:nowrap}
+.nav-links a:hover{color:var(--cream);background:rgba(197,167,110,.13)}
+.nav-social{display:flex;gap:2px;align-items:center;padding-left:12px;margin-left:6px;
+  border-left:1px solid rgba(197,167,110,.2)}
+.nav-social a{display:grid;place-items:center;width:31px;height:31px;border-radius:7px;
+  color:#b9ad93;transition:color .18s,background .18s,transform .18s}
+.nav-social a:hover{color:var(--cream);background:rgba(197,167,110,.15);transform:translateY(-1px)}
+.nav-social svg{width:15px;height:15px;fill:currentColor}
+.btn-yt{display:inline-flex;align-items:center;gap:7px;background:#c0392b;color:#fff;text-decoration:none;
+  font-size:12.5px;font-weight:800;letter-spacing:.3px;padding:9px 15px;border-radius:8px;margin-left:10px;
+  box-shadow:0 4px 14px rgba(192,57,43,.36);transition:transform .18s,box-shadow .18s;white-space:nowrap}
+.btn-yt:hover{transform:translateY(-1px);box-shadow:0 7px 20px rgba(192,57,43,.5)}
+.btn-yt svg{width:15px;height:15px;fill:#fff}
+.burger{display:none;margin-left:auto;background:none;border:1px solid rgba(197,167,110,.3);
+  border-radius:8px;width:40px;height:36px;cursor:pointer;flex-direction:column;justify-content:center;
+  align-items:center;gap:4px}
+.burger span{display:block;width:17px;height:2px;background:var(--cream);border-radius:2px;transition:.25s}
+.burger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.burger.open span:nth-child(2){opacity:0}
+.burger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.mobile-menu{display:none;position:fixed;top:var(--nav-h);left:0;right:0;z-index:150;
+  background:rgba(20,16,13,.985);border-bottom:1px solid rgba(197,167,110,.3);padding:0 20px;
+  max-height:0;overflow:hidden;transition:max-height .32s ease, padding .32s ease}
+.mobile-menu.open{max-height:600px;padding:14px 20px 20px}
+.mobile-menu a{display:block;text-decoration:none;color:#ddd2ba;font-size:15px;font-weight:600;
+  padding:11px 4px;border-bottom:1px solid rgba(197,167,110,.11)}
+
+/* ---------- HERO ---------- */
+.social-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:6px}
+.soc{display:flex;flex-direction:column;align-items:center;gap:9px;text-decoration:none;
+  background:rgba(245,236,216,.045);border:1px solid rgba(197,167,110,.22);border-radius:12px;
+  padding:22px 12px;transition:transform .22s,border-color .22s,background .22s}
+.soc:hover{transform:translateY(-4px);border-color:rgba(197,167,110,.55);background:rgba(245,236,216,.085)}
+.soc svg{width:24px;height:24px;fill:var(--cream);transition:fill .22s}
+.soc:hover svg{fill:var(--gold)}
+.soc .n{font-size:13px;font-weight:700;color:var(--cream)}
+.soc .h{font-size:11px;color:#8f8673}
+
+/* ---------- FOOTER ---------- */
+footer{margin-top:60px;border-top:1px solid rgba(197,167,110,.18);
+  background:rgba(16,13,10,.5);padding:44px 0 120px}
+.foot-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:34px;margin-bottom:32px}
+.foot-brand .crest{width:44px;height:44px;margin-bottom:12px}
+.foot-brand h4{font-family:'IM Fell English',serif;font-weight:400;font-size:22px;color:var(--cream);margin-bottom:8px}
+.foot-brand p{font-size:12.5px;line-height:1.7;color:#8f8673;max-width:38ch}
+.foot-col h5{font-size:9.5px;font-weight:800;letter-spacing:2.2px;text-transform:uppercase;
+  color:var(--honey);margin-bottom:13px}
+.foot-col a{display:block;text-decoration:none;color:#a49a84;font-size:13px;padding:5px 0;transition:color .18s}
+.foot-col a:hover{color:var(--cream)}
+.foot-bot{border-top:1px solid rgba(197,167,110,.13);padding-top:20px;display:flex;
+  justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11.5px;color:#7d7462}
+
+/* ---------- NAV DROPDOWN (Ranks) ---------- */
+.navdrop{position:relative}
+.navdrop-menu{display:none;position:absolute;top:100%;left:0;background:rgba(20,16,13,.97);
+  border:1px solid rgba(197,167,110,.28);border-radius:8px;padding:6px;min-width:170px;
+  box-shadow:0 14px 34px rgba(0,0,0,.45);z-index:110}
+.navdrop:hover .navdrop-menu,.navdrop:focus-within .navdrop-menu{display:block}
+.navdrop-menu a{display:block;padding:9px 12px;font-size:12.5px;color:#d9cfb8;text-decoration:none;
+  border-radius:5px;white-space:nowrap}
+.navdrop-menu a:hover{background:rgba(197,167,110,.13);color:var(--cream)}
+
+/* ---------- MOBILE MENU: Ranks sub-items ---------- */
+.mm-label{padding:10px 20px 2px;font-size:10.5px;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;color:var(--honey);opacity:.8}
+.mobile-menu a.mm-sub{padding-left:34px;font-size:13.5px;opacity:.92}
+
+.soon-badge{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.5px;
+  background:rgba(197,167,110,.22);color:var(--honey);padding:2px 6px;border-radius:5px;
+  margin-left:4px;vertical-align:middle;text-transform:uppercase}
+.soon-link{opacity:.85}
+
+/* ---------- CHRONICLE: season accordion (scales as seasons are added) ---------- */
+.season-block{border:2px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:14px;background:#fff}
+.season-head{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:none;border:none;padding:16px 20px;cursor:pointer;text-align:left;font-family:inherit}
+.season-head .s-name{font-family:'IM Fell English',serif;font-size:20px;color:var(--green)}
+.season-head .s-count{font-size:12px;color:var(--muted);margin-left:auto;margin-right:10px}
+.season-head .s-chev{transition:transform .25s;color:var(--honey);font-size:14px}
+.season-block.open .season-head .s-chev{transform:rotate(180deg)}
+.season-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.season-block.open .season-body{max-height:4000px}
+.season-body-in{padding:0 20px 20px}
+
+.nav-social a{position:relative}
+.soon-dot{position:absolute;top:-3px;right:-3px;width:7px;height:7px;border-radius:50%;
+  background:var(--honey);border:1.5px solid #14100d}
+.soc{position:relative}
+.soc .soon-tag{display:block;font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+  color:var(--honey);margin-top:2px}
+
+</style>
+</head>
+<body>
+<!-- ============ ICON SPRITE ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-yt" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.3 31.3 0 0 0 0 12a31.3 31.3 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.3 31.3 0 0 0 24 12a31.3 31.3 0 0 0-.5-5.8ZM9.6 15.6V8.4l6.3 3.6-6.3 3.6Z"/></symbol>
+  <symbol id="i-fb" viewBox="0 0 24 24"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.96h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07Z"/></symbol>
+  <symbol id="i-ig" viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23-.06-1.27-.07-1.65-.07-4.85s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41 1.27-.06 1.65-.07 4.85-.07M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63a5.9 5.9 0 0 0-2.13 1.38A5.9 5.9 0 0 0 .63 4.14c-.3.76-.5 1.64-.56 2.91C.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.3.79.72 1.46 1.38 2.13a5.9 5.9 0 0 0 2.13 1.38c.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56a5.9 5.9 0 0 0 2.13-1.38 5.9 5.9 0 0 0 1.38-2.13c.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91a5.9 5.9 0 0 0-1.38-2.13A5.9 5.9 0 0 0 19.86.63c-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0Zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm7.85-10.4a1.44 1.44 0 1 1-2.88 0 1.44 1.44 0 0 1 2.88 0Z"/></symbol>
+  <symbol id="i-tt" viewBox="0 0 24 24"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.59 2.59 0 1 1 .77-5.06V9.66a5.66 5.66 0 0 0-.77-.05A5.68 5.68 0 1 0 15.54 15.3V8.9a7.34 7.34 0 0 0 4.3 1.38V7.19a4.28 4.28 0 0 1-3.24-1.37Z"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.46l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93Zm-1.29 19.5h2.04L6.48 3.24H4.3l13.31 17.41Z"/></symbol>
+  <symbol id="i-vote" viewBox="0 0 24 24"><path d="M4 20h16M6 16V9l6-5 6 5v7M9.5 12.5l1.7 1.7 3.3-3.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-hammer" viewBox="0 0 24 24"><path d="m14 4 6 6-2.5 2.5L11.5 6.5 14 4ZM11 8 3.5 15.5a2 2 0 0 0 0 2.8l2.2 2.2a2 2 0 0 0 2.8 0L16 13" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22V4.5ZM4 19.5A2.5 2.5 0 0 1 6.5 17H20" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-wheat" viewBox="0 0 24 24"><path d="M12 22V9m0 0c0-2 1.5-4 3.5-4.5C16 6.5 14.5 9 12 9Zm0 0c0-2-1.5-4-3.5-4.5C8 6.5 9.5 9 12 9Zm0 5c0-2 1.5-4 3.5-4.5C16 11.5 14.5 14 12 14Zm0 0c0-2-1.5-4-3.5-4.5C8 11.5 9.5 14 12 14Z" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21H3V10.5Z" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M22 12h-3M5 12H2m15.1-7.1-2.1 2.1M9 15l-2.1 2.1m10.2 0L15 15M9 9 6.9 6.9" stroke-linecap="round"/></symbol>
+  <symbol id="i-anvil" viewBox="0 0 24 24"><path d="M3 8h9l3 3h6v3h-4l-2 3H8l-2-3H3V8Zm5 9h8l1 4H7l1-4Z" stroke-linejoin="round"/></symbol>
+  <symbol id="i-hen" viewBox="0 0 24 24"><path d="M12 3c3.3 3.6 5.5 6.9 5.5 10.2A5.5 5.5 0 0 1 12 19a5.5 5.5 0 0 1-5.5-5.8C6.5 9.9 8.7 6.6 12 3Z" stroke-linejoin="round"/><path d="M8.5 21h7" stroke-linecap="round"/></symbol>
+  <symbol id="i-crest" viewBox="0 0 64 64">
+    <path d="M32 3 58 11v22c0 15-11 24-26 28C17 57 6 48 6 33V11L32 3Z" fill="#2C4A34" stroke="#C9A227" stroke-width="2.2"/>
+    <path d="M32 8.5 52.5 14.6V33c0 12.4-8.9 19.9-20.5 23.3C20.4 52.9 11.5 45.4 11.5 33V14.6L32 8.5Z" fill="none" stroke="#C9A227" stroke-width="1" opacity=".55"/>
+    <path d="M32 17v26M32 22c0-3 2.5-5.5 5.5-6.3-.6 3.4-3 6.3-5.5 6.3Zm0 0c0-3-2.5-5.5-5.5-6.3.6 3.4 3 6.3 5.5 6.3Zm0 8c0-3 2.5-5.5 5.5-6.3-.6 3.4-3 6.3-5.5 6.3Zm0 0c0-3-2.5-5.5-5.5-6.3.6 3.4 3 6.3 5.5 6.3Zm0 8c0-3 2.5-5.5 5.5-6.3-.6 3.4-3 6.3-5.5 6.3Zm0 0c0-3-2.5-5.5-5.5-6.3.6 3.4 3 6.3 5.5 6.3Z"
+      fill="none" stroke="#E8DCC0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M22 46h20" stroke="#C9A227" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
+<nav class="nav" id="nav">
+  <div class="nav-in">
+    <a class="brand" href="index.html">
+      <svg class="crest"><use href="#i-crest"/></svg>
+      <span><b>Homestead Kingdom</b><i>The Kingdom Decides</i></span>
+    </a>
+    <div class="nav-links">
+      <div class="navdrop">
+        <a href="how-to-play.html" class="navdrop-trigger">How It Works ▾</a>
+        <div class="navdrop-menu">
+          <a href="how-to-play.html">The Rules</a>
+          <a href="guilds.html">The Guilds</a>
+          <a href="kingdom-ranks.html">Kingdom Ranks</a>
+          <a href="council-ranks.html">Council Ranks</a>
+        </div>
+      </div>
+      <a href="quests.html">Available Quests</a>
+      <a href="ledger.html">Live Standings</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="tech-tree.html" class="soon-link">The Tech Tree <span class="soon-badge">Soon</span></a>
+      <a href="rules.html">Rules</a>
+      <a href="faq.html">FAQ</a>
+    </div>
+    <div class="nav-social">
+      <a href="https://www.youtube.com/channel/UCY61yOrsTRyLKAod_4L9sCQ" target="_blank" rel="noopener" title="YouTube"><svg><use href="#i-yt"/></svg></a>
+      <a href="https://www.facebook.com/HomesteadKingdom" target="_blank" rel="noopener" title="Facebook"><svg><use href="#i-fb"/></svg></a>
+      <a href="https://www.instagram.com/homestead_kingdom/" target="_blank" rel="noopener" title="Instagram"><svg><use href="#i-ig"/></svg></a>
+      <a href="https://www.tiktok.com/@homesteadkingdom" target="_blank" rel="noopener" title="TikTok"><svg><use href="#i-tt"/></svg></a>
+      <a href="https://x.com/Homestead_KD" target="_blank" rel="noopener" title="X"><svg><use href="#i-x"/></svg></a>
+    </div>
+    <a class="btn-yt" href="https://www.youtube.com/channel/UCY61yOrsTRyLKAod_4L9sCQ" target="_blank" rel="noopener"><svg><use href="#i-yt"/></svg> Watch</a>
+    <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mmenu">
+  <a href="index.html">Home</a>
+  <a href="how-to-play.html">How It Works</a>
+  <a href="guilds.html" class="mm-sub">The Guilds</a>
+  <a href="kingdom-ranks.html" class="mm-sub">Kingdom Ranks</a>
+  <a href="council-ranks.html" class="mm-sub">Council Ranks</a>
+  <a href="quests.html">Available Quests</a>
+  <a href="ledger.html">Live Standings</a>
+  <a href="chronicle.html">Chronicle</a>
+  <a href="tech-tree.html">The Tech Tree <span class="soon-badge">Soon</span></a>
+  <a href="rules.html">Rules of the Realm</a>
+  <a href="faq.html">FAQ</a>
+  <a href="https://www.youtube.com/channel/UCY61yOrsTRyLKAod_4L9sCQ" target="_blank" rel="noopener" style="color:#e2c783;font-weight:800">▶ Watch on YouTube</a>
+</div>
+
+<header class="banner">
+  <div class="kicker">The Living Record</div>
+  <h1>The Kingdom Ledger</h1>
+  <div class="tag">The whole community is building one farm. Here is where it stands.</div>
+  <div class="rule"></div>
+</header>
+
+<div class="wrap">
+  <div class="datanote" id="datanote"></div>
+
+  <!-- CURRENT STATE -->
+  <section class="card">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    <div class="hero">
+      <div class="crest" id="crest">✦</div>
+      <div>
+        <div class="tlabel">The Kingdom has reached</div>
+        <div class="tname" id="kName">Holding</div>
+        <div class="tno" id="kNo">Kingdom Rank 1 of 10</div>
+        <div class="bar"><i id="kBar" style="width:0%"></i></div>
+        <div class="next"><span id="kXp">355 Kingdom XP</span><span id="kNext"><b>145</b> to Homestead</span></div>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n" id="stTreasury">125 <small>Coins</small></div><div class="l">Royal Treasury</div></div>
+      <div class="stat"><div class="n" id="stEps">1</div><div class="l">Episodes Chronicled</div></div>
+    </div>
+  </section>
+
+  <!-- THE BUILD -->
+  <section class="card">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    <div class="sect-title">The Build</div>
+    <div class="sect-sub">Total Kingdom XP earned in each discipline</div>
+    <div class="plaques" id="plaques"></div>
+  </section>
+
+  <!-- THE COUNCIL -->
+  <section class="card">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    <div class="sect-title">The Council</div>
+    <div class="sect-sub">The members shaping the Kingdom · top of the standings</div>
+    <input type="text" id="councilSearch" placeholder="Find your name..." autocomplete="off"
+      style="width:100%;box-sizing:border-box;padding:10px 14px;margin-bottom:14px;font-family:'Inter',sans-serif;
+      font-size:14px;border:1.5px solid #b79b62;border-radius:8px;background:#fffdf7;color:var(--ink)">
+    <div id="board"></div>
+    <div id="boardExpand" style="text-align:center;margin-top:14px"></div>
+    <div style="margin-top:18px; padding-top:16px; border-top:1px dashed #b39c6a">
+      <div class="sect-sub" style="margin-bottom:8px">The path of a Council member</div>
+      <div class="ladder" id="ladder"></div>
+    </div>
+  </section>
+
+  <!-- CHRONICLE -->
+  <section class="card">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    <div class="sect-title">The Chronicle</div>
+    <div class="sect-sub">Every deed, every setback, every episode</div>
+    <p style="font-family:'Inter',sans-serif; font-size:13.5px; color:var(--muted); line-height:1.6; margin:6px 0 14px">
+      The full record lives on its own page — organized by season so it never turns into one long scroll.
+    </p>
+    <a class="btn" href="chronicle.html">Read the Chronicle →</a>
+  </section>
+
+  <!-- CTA -->
+  <section class="card cta">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+    <div class="sect-title">Take your seat on the Council</div>
+    <p>Every episode, the Council votes on what the Kingdom builds next — and the Steward does the real work. Cast your vote in the comments, make your prediction, and earn your rank. New members are named Founders for the whole first season.</p>
+    <a class="btn" id="ctaLink" href="#" target="_blank" rel="noopener">Watch &amp; Vote →</a>
+  </section>
+
+  <footer>
+    <div class="up" id="updated">The Kingdom Ledger · updated each episode</div>
+    <div>Homestead Kingdom — a real farm, built by its community.</div>
+  </footer>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIG — Chris fills these in once.
+   1) In your Kingdom Database Google Sheet: File → Share → Publish to web.
+   2) Publish the "Kingdom State" tab as CSV, AND the "Public Standings" tab
+      as CSV -- NOT "Council Ledger". Public Standings is the privacy-safe
+      view (Handle, Council XP, Rank, Honors, Guild, Expertise only) --
+      Council Ledger has Channel IDs and must never be published.
+   3) Paste each CSV link below.
+   Leave a URL blank to use the built-in sample data for that section.
+   The Chronicle is NOT fetched here -- it lives on chronicle.html, kept in
+   sync by hand from the Kingdom Codex (hk-kingdom-codex.md). This page just
+   links to it.
+   ===================================================================== */
+const CONFIG = {
+  kingdomStateCSV: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNlqKh4ZRe9XgKDIZIan6GgFVnSl2XVErp8VjBUiZrc4Lrmo09ONyqih522uLfD028n7mbOP9Zvz3R/pub?gid=1649568491&single=true&output=csv",   // Kingdom State tab, published as CSV
+  councilCSV:      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRNlqKh4ZRe9XgKDIZIan6GgFVnSl2XVErp8VjBUiZrc4Lrmo09ONyqih522uLfD028n7mbOP9Zvz3R/pub?gid=2029798564&single=true&output=csv",   // Public Standings tab, published as CSV
+  channelURL:      "https://www.youtube.com/channel/UCY61yOrsTRyLKAod_4L9sCQ",
+  refreshMinutes:  10
+};
+
+/* ===== Canonical ladders — match GDD Supplement v1.1 / Kingdom Database ===== */
+const KINGDOM_TIERS = [
+  {t:1,name:'Holding',xp:0},{t:2,name:'Homestead',xp:500},{t:3,name:'Hamlet',xp:1500},
+  {t:4,name:'Commons',xp:3500},{t:5,name:'Village',xp:8000},{t:6,name:'Small Farm',xp:18000},
+  {t:7,name:'Farmstead',xp:35000},{t:8,name:'Township',xp:65000},{t:9,name:'Estate',xp:120000},
+  {t:10,name:'Homestead Kingdom',xp:225000}
+];
+const COUNCIL_TIERS = [
+  {t:1,name:'Newcomer',xp:0},{t:2,name:'Cottager',xp:30},{t:3,name:'Villager',xp:90},
+  {t:4,name:'Citizen',xp:250},{t:5,name:'Yeoman',xp:450},{t:6,name:'Freeholder',xp:700},
+  {t:7,name:'Elected Official',xp:950},{t:8,name:'Magistrate',xp:1250},{t:9,name:'Warden',xp:1500},
+  {t:10,name:'Councilor',xp:1750},{t:11,name:'Elder of the Council',xp:2000}
+];
+const CATS = [
+  {key:'Food',       icon:'🌾'}, {key:'Building',  icon:'🏗️'}, {key:'Technology', icon:'⚙️'},
+  {key:'Equipment',  icon:'🛠️'}, {key:'Livestock', icon:'🐐'}
+];
+const fmt = n => Number(n||0).toLocaleString('en-US');
+
+/* ===== Fallback data — the honest state BEFORE any real votes exist.
+   This is not a "demo" — it's the real Kingdom state prior to Episode 1's first
+   vote closing. Once CONFIG's CSV links are live, real data replaces this automatically. ===== */
+const SAMPLE = {
+  kingdomXP: 0,
+  treasury: 150,
+  episodes: 0,
+  catTotals: {Food:0, Building:0, Technology:0, Equipment:0, Livestock:0},
+  council: []
+};
+
+function tierFor(ladder,xp){ let cur=ladder[0],nxt=null; for(let i=0;i<ladder.length;i++){ if(xp>=ladder[i].xp){cur=ladder[i];nxt=ladder[i+1]||null;} } return {cur,nxt}; }
+function progress(ladder,xp){ const {cur,nxt}=tierFor(ladder,xp); if(!nxt) return {pct:100,remain:0,cur,nxt:null}; const span=nxt.xp-cur.xp,into=xp-cur.xp; return {pct:xp>0?Math.max(2,Math.min(100,Math.round(into/span*100))):0,remain:nxt.xp-xp,cur,nxt}; }
+
+/* ===== Minimal CSV parser (handles quoted fields) ===== */
+function parseCSV(text){
+  const rows=[]; let row=[],cell='',q=false;
+  for(let i=0;i<text.length;i++){ const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=ch; }
+    else { if(ch==='"')q=true; else if(ch===','){row.push(cell);cell='';} else if(ch==='\n'){row.push(cell);rows.push(row);row=[];cell='';} else if(ch!=='\r')cell+=ch; }
+  }
+  if(cell!==''||row.length){row.push(cell);rows.push(row);}
+  return rows.filter(r=>r.some(c=>String(c).trim()!==''));
+}
+const numOf = s => { const n=parseFloat(String(s).replace(/[^0-9.\-]/g,'')); return isNaN(n)?0:n; };
+function headerIndex(headers, ...needles){
+  const H=headers.map(h=>String(h).toLowerCase().trim());
+  for(const nd of needles){ const i=H.findIndex(h=>h.includes(nd)); if(i>=0) return i; }
+  return -1;
+}
+// The Database tabs carry a title in row 1 and a subtitle in row 2, so the real
+// column headers sit a few rows down. Scan the first rows for the true header row.
+function findHeaderRow(rows, ...needles){
+  // Score by DISTINCT COLUMNS matched, not by how many needles matched --
+  // a description sentence like "Pulls Handle, Council XP, Rank..." can
+  // contain multiple needle words inside a single cell, which used to
+  // outscore the real header row and get mistaken for it. Requiring each
+  // match to land in its own column means prose can never beat a real
+  // header, where each keyword genuinely has its own column.
+  let best=0, bestScore=-1;
+  for(let i=0;i<Math.min(rows.length,12);i++){
+    const low=rows[i].map(c=>String(c).toLowerCase());
+    const matchedCols=new Set();
+    for(const nd of needles){ const idx=low.findIndex(h=>h.includes(nd)); if(idx>=0) matchedCols.add(idx); }
+    const score=matchedCols.size;
+    if(score>bestScore){ bestScore=score; best=i; }
+  }
+  return bestScore>0 ? best : 0;
+}
+// Category column aliases — matches "Tech XP" as well as "Technology", etc.
+const CAT_ALIASES = { Food:['food'], Building:['building'], Technology:['tech','technology'], Equipment:['equip','equipment'], Livestock:['livestock','stock'] };
+
+/* ===== Render ===== */
+function render(data){
+  const pr = progress(KINGDOM_TIERS, data.kingdomXP);
+  document.getElementById('kName').textContent = pr.cur.name;
+  document.getElementById('kNo').textContent = `Kingdom Rank ${pr.cur.t} of 10`;
+  document.getElementById('kBar').style.width = pr.pct+'%';
+  document.getElementById('kXp').textContent = fmt(data.kingdomXP)+' Kingdom XP';
+  document.getElementById('kNext').innerHTML = pr.nxt ? `<b>${fmt(pr.remain)}</b> to ${pr.nxt.name}` : 'The Kingdom is complete';
+  document.getElementById('stTreasury').innerHTML = `${fmt(data.treasury)} <small>Coins</small>`;
+  document.getElementById('stEps').textContent = fmt(data.episodes);
+
+  document.getElementById('plaques').innerHTML = CATS.map(c=>`
+    <div class="pl"><div class="ic">${c.icon}</div><div class="v">${fmt(data.catTotals[c.key]||0)}</div><div class="k">${c.key}</div></div>`).join('');
+
+  // Deterministic sort: XP descending, then alphabetical by name as a stable
+  // tiebreak -- matters a lot in the early weeks when most citizens are tied
+  // (e.g. everyone at exactly +10 for a single vote), so "top 20" isn't just
+  // whatever order the sheet happens to list rows in.
+  const fullSorted = [...data.council].sort((a,b) => b.xp - a.xp || a.name.localeCompare(b.name));
+  let boardState = { query: '', showAll: false };
+
+  let expandedIdx = null;
+
+  function buildProfileCard(m){
+    const {cur,nxt} = tierFor(COUNCIL_TIERS, m.xp);
+    const pct = nxt ? Math.max(2,Math.min(100,Math.round((m.xp-cur.xp)/(nxt.xp-cur.xp)*100))) : 100;
+    const remain = nxt ? nxt.xp-m.xp : 0;
+    const honorsList = (m.hon||'').split(',').map(h=>h.trim()).filter(Boolean);
+    const honorsHtml = honorsList.length
+      ? honorsList.map(h=>`<span class="pc-badge">${h}</span>`).join('')
+      : `<span class="pc-badge dim">None yet</span>`;
+    const historyEntries = (m.voteHistory||'').split('|').map(e=>e.trim()).filter(Boolean).reverse();
+    const historyHtml = historyEntries.length
+      ? historyEntries.map(e=>{
+          const isLate = / \(late\)$/.test(e);
+          const clean = e.replace(/ \(late\)$/, '');
+          const parts = clean.split(':'); const ep = (parts[0]||'').trim(); const proj = parts.slice(1).join(':').trim();
+          const lateTag = isLate ? ' <span class="pc-late">— after voting closed</span>' : '';
+          return `<div class="pc-vote-row"><span class="pc-ep">${ep}</span><span class="pc-proj">${proj}${lateTag}</span></div>`;
+        }).join('')
+      : `<div class="pc-vote-row dim"><span class="pc-proj">No votes recorded yet</span></div>`;
+    const gxHtml = (m.guild || m.expertise) ? `
+      <div class="pc-row"><div class="pc-col"><div class="pc-lab">Guild</div><div class="pc-val">${m.guild||'—'}</div></div>
+      <div class="pc-col"><div class="pc-lab">Expertise</div><div class="pc-val">${m.expertise||'—'}</div></div></div>` : '';
+
+    return `<div class="profile-card">
+      <div class="pc-head">
+        <img class="pc-logo" src="logo.png" alt="Homestead Kingdom">
+        <div class="pc-id">
+          <div class="pc-name">${m.name.replace(/^@/,'')}</div>
+          <div class="pc-rank">${cur.name}</div>
+        </div>
+      </div>
+      <div class="pc-row">
+        <div class="pc-col"><div class="pc-lab">Council XP</div><div class="pc-val big">${fmt(m.xp)}</div></div>
+        <div class="pc-col"><div class="pc-lab">Votes Cast</div><div class="pc-val big">${fmt(m.votesCast||0)}</div></div>
+      </div>
+      <div class="pc-bar"><i style="width:${pct}%"></i></div>
+      <div class="pc-sub-row">
+        <div class="pc-sub">${nxt ? fmt(remain)+' XP to '+nxt.name : 'Highest rank reached'}</div>
+        <div class="pc-info" tabindex="0">
+          <span class="pc-info-ic">i</span>
+          <div class="pc-tooltip">
+            <div class="pc-tooltip-title">Council Ranks</div>
+            ${COUNCIL_TIERS.map(t=>`<div class="pc-tt-row ${cur.name===t.name?'current':''}"><span class="pc-tt-name">${t.name}</span><span class="pc-tt-xp">${fmt(t.xp)}+</span></div>`).join('')}
+          </div>
+        </div>
+      </div>
+      ${gxHtml}
+      <div class="pc-section-lab">Titles &amp; Honors</div>
+      <div class="pc-badges">${honorsHtml}</div>
+      <div class="pc-section-lab">Vote History</div>
+      <div class="pc-votes">${historyHtml}</div>
+    </div>`;
+  }
+
+  function renderBoard(){
+    const q = boardState.query.trim().toLowerCase();
+    const filtered = q ? fullSorted.filter(m => m.name.toLowerCase().includes(q)) : fullSorted;
+    const showing = q ? filtered : (boardState.showAll ? filtered : filtered.slice(0, 20));
+
+    if(fullSorted.length === 0){
+      document.getElementById('board').innerHTML = `<div style="text-align:center; padding:18px 6px; font-family:'Inter',sans-serif; color:var(--muted); font-size:13.5px; line-height:1.6">
+        No citizens yet — the Council opens with Episode 1.<br>Cast the first vote and your name starts this list.</div>`;
+      document.getElementById('boardExpand').innerHTML = '';
+      return;
+    }
+    if(q && filtered.length === 0){
+      document.getElementById('board').innerHTML = `<div style="text-align:center; padding:18px 6px; font-family:'Inter',sans-serif; color:var(--muted); font-size:13.5px">
+        No citizen matching "${boardState.query}" yet.</div>`;
+      document.getElementById('boardExpand').innerHTML = '';
+      return;
+    }
+
+    document.getElementById('board').innerHTML = showing.map((m)=>{
+      const i = fullSorted.indexOf(m);
+      const t=tierFor(COUNCIL_TIERS,m.xp).cur; const g=i<3?'g'+(i+1):'';
+      const hon=m.hon?` · <span class="hon">${m.hon}</span>`:'';
+      const gxParts=[]; if(m.guild) gxParts.push(`<span class="gd">${m.guild}</span>`); if(m.expertise) gxParts.push(m.expertise);
+      const gx=gxParts.length? `<div class="gx">${gxParts.join(' · ')}</div>` : '';
+      const isOpen = expandedIdx === i;
+      return `<div class="lbwrap">
+        <div class="lbrow ${g} ${isOpen?'open':''}" data-idx="${i}" role="button" tabindex="0">
+          <div class="rk">${i+1}</div>
+          <div class="who"><div class="nm">${m.name.replace(/^@/,'')}</div><div class="rr">${t.name}${hon}</div>${gx}</div>
+          <div class="xp">${fmt(m.xp)}<small>COUNCIL XP</small></div>
+          <div class="lbchev">▾</div>
+        </div>
+        ${isOpen ? buildProfileCard(m) : ''}
+      </div>`;
+    }).join('');
+
+    Array.prototype.forEach.call(document.querySelectorAll('.lbrow'),function(row){
+      row.addEventListener('click',function(){
+        const idx = Number(row.getAttribute('data-idx'));
+        expandedIdx = (expandedIdx === idx) ? null : idx;
+        renderBoard();
+      });
+      row.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); row.click(); } });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('.pc-info'),function(info){
+      info.addEventListener('click',function(e){
+        e.stopPropagation();
+        const wasOpen = info.classList.contains('show');
+        Array.prototype.forEach.call(document.querySelectorAll('.pc-info.show'),function(x){ x.classList.remove('show'); });
+        if(!wasOpen) info.classList.add('show');
+      });
+    });
+
+    const expandEl = document.getElementById('boardExpand');
+    if(!q && !boardState.showAll && fullSorted.length > 20){
+      expandEl.innerHTML = `<button id="showAllBtn" style="font-family:'Inter',sans-serif;font-weight:700;
+        background:none;border:1.5px dashed var(--honey);color:var(--wood);padding:9px 20px;border-radius:20px;
+        cursor:pointer;font-size:13px">Show all ${fullSorted.length} citizens →</button>`;
+      document.getElementById('showAllBtn').addEventListener('click', ()=>{ boardState.showAll = true; renderBoard(); });
+    } else {
+      expandEl.innerHTML = '';
+    }
+  }
+  renderBoard();
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('.pc-info')){
+      Array.prototype.forEach.call(document.querySelectorAll('.pc-info.show'),function(x){ x.classList.remove('show'); });
+    }
+  });
+  document.getElementById('councilSearch').addEventListener('input', (e)=>{
+    boardState.query = e.target.value; renderBoard();
+  });
+
+  document.getElementById('ladder').innerHTML = COUNCIL_TIERS.map(t=>`<span class="rung">${t.name}</span>`).join('');
+
+  document.getElementById('ctaLink').href = CONFIG.channelURL;
+}
+
+/* ===== Load live data (best-effort) then render ===== */
+async function fetchCSV(url){ const res=await fetch(url,{cache:'no-store'}); if(!res.ok) throw new Error(res.status); return parseCSV(await res.text()); }
+
+async function loadKingdomState(url){
+  const rows=await fetchCSV(url); if(rows.length<2) throw new Error('empty');
+  const h=findHeaderRow(rows,'episode','food'); const head=rows[h];
+  const iCum=headerIndex(head,'cumulative','total kingdom','cum');
+  const iBal=headerIndex(head,'coin balance','balance','treasury');
+  const iEp=headerIndex(head,'episode','ep');
+  const catIdx={}; CATS.forEach(c=>catIdx[c.key]=headerIndex(head,...CAT_ALIASES[c.key]));
+  let body=rows.slice(h+1).filter(r=>r.some(x=>String(x).trim()!==''));
+  if(iEp>=0) body=body.filter(r=>String(r[iEp]||'').trim()!=='');   // only real episode rows
+  if(!body.length) throw new Error('no data rows');
+  const last=body[body.length-1];
+  const catTotals={}; CATS.forEach(c=>{ let s=0; body.forEach(r=>{ if(catIdx[c.key]>=0) s+=numOf(r[catIdx[c.key]]); }); catTotals[c.key]=s; });
+  return {
+    kingdomXP: iCum>=0 ? numOf(last[iCum]) : Object.values(catTotals).reduce((a,b)=>a+b,0),
+    treasury:  iBal>=0 ? numOf(last[iBal]) : 0,
+    episodes:  body.length,
+    catTotals
+  };
+}
+async function loadCouncil(url){
+  const rows=await fetchCSV(url);
+  const h=findHeaderRow(rows,'handle','council xp','channel id'); const head=rows[h];
+  const iName=headerIndex(head,'handle','member','viewer','display name');
+  const iXp=headerIndex(head,'council xp','xp','points');
+  const iHon=headerIndex(head,'honor','honour');
+  const iGuild=headerIndex(head,'guild');
+  const iExp=headerIndex(head,'expertise');
+  const iVotesCast=headerIndex(head,'votes cast');
+  const iVoteHistory=headerIndex(head,'vote history');
+  return rows.slice(h+1).map(r=>({
+    name:(iName>=0?r[iName]:r[1])||'', xp:numOf(iXp>=0?r[iXp]:r[2]), hon:(iHon>=0?(r[iHon]||'').trim():''),
+    guild:(iGuild>=0?(r[iGuild]||'').trim():''), expertise:(iExp>=0?(r[iExp]||'').trim():''),
+    votesCast:(iVotesCast>=0?numOf(r[iVotesCast]):0),
+    voteHistory:(iVoteHistory>=0?(r[iVoteHistory]||'').trim():'')
+  })).filter(m=>m.name && String(m.name).trim()!=='' && numOf(m.xp)>0);
+}
+
+async function init(){
+  const data=JSON.parse(JSON.stringify(SAMPLE));
+  let live=false, warned=[];
+  try{ if(CONFIG.kingdomStateCSV){ Object.assign(data, await loadKingdomState(CONFIG.kingdomStateCSV)); live=true; } }catch(e){ warned.push('Kingdom State'); }
+  try{ if(CONFIG.councilCSV){ const c=await loadCouncil(CONFIG.councilCSV); if(c.length){ data.council=c; live=true; } } }catch(e){ warned.push('Council'); }
+
+  render(data);
+
+  const dn=document.getElementById('datanote');
+  const up=document.getElementById('updated');
+  if(!CONFIG.kingdomStateCSV && !CONFIG.councilCSV){
+    dn.style.display='block';
+    dn.textContent='This is the Kingdom\'s real state before Episode 1\'s first vote closes. Paste your published-sheet CSV links into the CONFIG block at the top of this file once voting begins, to go live.';
+  } else if(warned.length){
+    dn.style.display='block';
+    dn.textContent='Live where possible; using sample data for: '+warned.join(', ')+'. Check those tabs are published to the web as CSV.';
+  }
+  up.textContent = live ? 'The Kingdom Ledger · reading live from the Council’s records' : 'The Kingdom Ledger · updated each episode';
+}
+
+init();
+if(CONFIG.refreshMinutes>0 && (CONFIG.kingdomStateCSV||CONFIG.councilCSV)){
+  setInterval(init, CONFIG.refreshMinutes*60*1000);
+}
+</script>
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <svg class="crest"><use href="#i-crest"/></svg>
+        <h4>Homestead Kingdom</h4>
+        <p>A working homestead in Michigan, run as a strategy game the community governs. The Council votes, the Steward builds, and the record stays public — especially the parts that didn't work.</p>
+      </div>
+      <div class="foot-col">
+        <h5>How It Works</h5>
+        <a href="how-to-play.html">The Rules</a>
+        <a href="guilds.html">The Guilds</a>
+        <a href="kingdom-ranks.html">Kingdom Ranks</a>
+        <a href="council-ranks.html">Council Ranks</a>
+      </div>
+      <div class="foot-col">
+        <h5>The Record</h5>
+        <a href="ledger.html">Live Standings</a>
+        <a href="quests.html">Available Quests</a>
+        <a href="chronicle.html">The Chronicle</a>
+        <a href="tech-tree.html">The Tech Tree (Soon)</a>
+        <a href="rules.html">Rules of the Realm</a>
+        <a href="faq.html">FAQ</a>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© <span class="num">2026</span> Homestead Kingdom · Season One</span>
+      <span>The Council decides. The Steward builds. The record keeps us both honest.</span>
+    </div>
+  </div>
+</footer>
+<script>
+(function(){
+  // ---- dust motes ----
+  var m=document.getElementById('motes');
+  if(m){
+    for(var i=0;i<26;i++){
+      var d=document.createElement('i');
+      var s=(Math.random()*2.4+1).toFixed(2);
+      d.className='mote';
+      d.style.width=s+'px';d.style.height=s+'px';
+      d.style.left=(Math.random()*100).toFixed(2)+'%';
+      d.style.top=(45+Math.random()*60).toFixed(2)+'%';
+      d.style.animationDuration=(9+Math.random()*13).toFixed(1)+'s';
+      d.style.animationDelay=(-Math.random()*18).toFixed(1)+'s';
+      d.style.opacity=(0.2+Math.random()*0.5).toFixed(2);
+      m.appendChild(d);
+    }
+  }
+
+  // ---- nav scroll state + sticky vote bar ----
+  var nav=document.getElementById('nav'), vb=document.getElementById('votebar');
+  function onScroll(){
+    var y=window.pageYOffset||document.documentElement.scrollTop;
+    if(nav){ if(y>40) nav.classList.add('stuck'); else nav.classList.remove('stuck'); }
+    if(vb){
+      var voteSec=document.getElementById('vote');
+      var past = voteSec ? (y > voteSec.offsetTop + voteSec.offsetHeight - 200) : true;
+      var atBottom = (y + window.innerHeight) > (document.body.scrollHeight - 260);
+      if(y>620 && past && !atBottom) vb.classList.add('show'); else vb.classList.remove('show');
+    }
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+
+  // ---- mobile menu ----
+  var b=document.getElementById('burger'), mm=document.getElementById('mmenu');
+  if(b && mm){
+    b.addEventListener('click',function(){b.classList.toggle('open');mm.classList.toggle('open')});
+    Array.prototype.forEach.call(mm.querySelectorAll('a'),function(a){
+      a.addEventListener('click',function(){b.classList.remove('open');mm.classList.remove('open')});
+    });
+  }
+
+  // ---- count up ----
+  function countTo(el,target){
+    var start=null,dur=1400;
+    function step(ts){
+      if(!start) start=ts;
+      var p=Math.min((ts-start)/dur,1);
+      var e=1-Math.pow(1-p,3);
+      el.textContent=Math.round(target*e).toLocaleString('en-US');
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  // ---- reveal + bars + counters (scroll sweep: never misses on fast scroll) ----
+  var pending = Array.prototype.slice.call(document.querySelectorAll('.rv'));
+  function fire(t){
+    t.classList.add('in');
+    Array.prototype.forEach.call(t.querySelectorAll('[data-w]'),function(bar){
+      setTimeout(function(){bar.style.width=bar.getAttribute('data-w')+'%'},180);
+    });
+    Array.prototype.forEach.call(t.querySelectorAll('[data-count]'),function(c){
+      if(c.dataset.done) return; c.dataset.done='1';
+      countTo(c,parseInt(c.getAttribute('data-count'),10));
+    });
+  }
+  function sweep(){
+    if(!pending.length) return;
+    var vh=window.innerHeight, still=[];
+    for(var i=0;i<pending.length;i++){
+      var r=pending[i].getBoundingClientRect();
+      if(r.top < vh-40 && r.bottom > -80) fire(pending[i]);
+      else if(r.top >= vh-40) still.push(pending[i]);
+      else fire(pending[i]); // scrolled past without firing
+    }
+    pending=still;
+  }
+  window.addEventListener('scroll',sweep,{passive:true});
+  window.addEventListener('resize',sweep);
+  sweep();
+  setTimeout(sweep,300);
+
+  // ---- tech tree tabs ----
+  var tabs=document.getElementById('tabs'), tree=document.getElementById('tree');
+  if(tabs){
+    tabs.addEventListener('click',function(e){
+      var t=e.target.closest('.tab'); if(!t) return;
+      Array.prototype.forEach.call(tabs.querySelectorAll('.tab'),function(x){x.classList.remove('on')});
+      t.classList.add('on');
+      var f=t.getAttribute('data-f');
+      Array.prototype.forEach.call(tree.children,function(n){
+        n.style.display=(f==='all'||n.getAttribute('data-d')===f)?'':'none';
+      });
+    });
+  }
+
+  // ---- FAQ accordion ----
+  Array.prototype.forEach.call(document.querySelectorAll('.qa button'),function(btn){
+    btn.addEventListener('click',function(){
+      var qa=btn.parentElement, wasOpen=qa.classList.contains('open');
+      Array.prototype.forEach.call(document.querySelectorAll('.qa'),function(x){x.classList.remove('open')});
+      if(!wasOpen) qa.classList.add('open');
+    });
+  });
+
+  // ---- Chronicle season accordion (each season toggles independently) ----
+  Array.prototype.forEach.call(document.querySelectorAll('.season-head'),function(btn){
+    btn.addEventListener('click',function(){
+      btn.closest('.season-block').classList.toggle('open');
+    });
+  });
+})();
+</script>
+</body>
+</html>
