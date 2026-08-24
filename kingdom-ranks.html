@@ -839,10 +839,18 @@ function siteHeaderIndex(headers, ...needles){
   return -1;
 }
 function siteFindHeaderRow(rows, ...needles){
+  // Score by DISTINCT COLUMNS matched, not by how many needles matched --
+  // a description sentence like "Pulls Handle, Council XP, Rank..." can
+  // contain multiple needle words inside a single cell, which used to
+  // outscore the real header row and get mistaken for it. Requiring each
+  // match to land in its own column means prose can never beat a real
+  // header, where each keyword genuinely has its own column.
   let best=0, bestScore=-1;
   for(let i=0;i<Math.min(rows.length,12);i++){
     const low=rows[i].map(c=>String(c).toLowerCase());
-    let score=0; for(const nd of needles){ if(low.some(h=>h.includes(nd))) score++; }
+    const matchedCols=new Set();
+    for(const nd of needles){ const idx=low.findIndex(h=>h.includes(nd)); if(idx>=0) matchedCols.add(idx); }
+    const score=matchedCols.size;
     if(score>bestScore){ bestScore=score; best=i; }
   }
   return bestScore>0 ? best : 0;
